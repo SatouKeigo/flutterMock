@@ -3,15 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/HomePage.dart';
 
 class ThirdPage extends StatelessWidget {
+  const ThirdPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("ページ(3)"),
+          title: const Text("ページ(3)"),
         ),
         body: Center(
           child: TextButton(
-            child: Text("最初のページに戻る"),
+            child: const Text("最初のページに戻る"),
             onPressed: () {
               //（１）指定した画面に遷移する
               Navigator.popUntil(context, (route) => route.isFirst);

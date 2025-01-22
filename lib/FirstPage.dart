@@ -3,15 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/SecondPage.dart';
 
 class FirstPage extends StatelessWidget {
+  const FirstPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("ページ(1)"),
+        title: const Text("ページ(1)"),
       ),
       body: Center(
         child: TextButton(
-          child: Text("２ページ目に遷移する"),
+          child: const Text("２ページ目に遷移する"),
           onPressed: () {
             //（１）指定した画面に遷移する
             Navigator.pushReplacement(

@@ -3,6 +3,8 @@ import 'package:flutter_application_1/detail/CouponDetail.dart';
 import 'package:flutter_application_1/list/CouponListView.dart';
 
 class MainPageWidget extends StatefulWidget {
+  const MainPageWidget({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return _MainPageWidget();

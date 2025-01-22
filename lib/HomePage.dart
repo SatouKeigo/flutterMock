@@ -3,15 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/FirstPage.dart';
 
 class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("ホーム"),
+        title: const Text("ホーム"),
       ),
       body: Center(
         child: TextButton(
-          child: Text("1ページ目に遷移する"),
+          child: const Text("1ページ目に遷移する"),
           onPressed: () {
             //（１）指定した画面に遷移する
             Navigator.push(
