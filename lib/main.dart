@@ -3,15 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 
-void main() {
-  runApp(MyApp());
-}
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'ソラミル',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: Colors.grey[100],
+        useMaterial3: true,
+      ),
       home: WeatherApp(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -27,8 +32,8 @@ class _WeatherAppState extends State<WeatherApp> {
   String _iconCode = '';
   bool _isLoading = false;
   String? _error;
-  List<String> _favoriteCities = []; // お気に入り都市リスト
-  final TextEditingController _controller = TextEditingController(); // 入力取得
+  List<String> _favoriteCities = [];
+  final TextEditingController _controller = TextEditingController();
 
   Future<void> fetchWeather(String city) async {
     setState(() {
@@ -51,12 +56,12 @@ class _WeatherAppState extends State<WeatherApp> {
         });
       } else {
         setState(() {
-          _error = '天気情報を取得できませんでした（${response.statusCode}）';
+          _error = '天気情報を取得できません（${response.statusCode}）';
         });
       }
     } catch (e) {
       setState(() {
-        _error = '通信エラーが発生しました';
+        _error = '通信エラー';
       });
     } finally {
       setState(() {
@@ -74,10 +79,8 @@ class _WeatherAppState extends State<WeatherApp> {
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        setState(() {
-          _error = '位置情報サービスが無効です';
-          _isLoading = false;
-        });
+        _error = '位置情報サービスが無効です';
+        _isLoading = false;
         return;
       }
 
@@ -85,25 +88,20 @@ class _WeatherAppState extends State<WeatherApp> {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          setState(() {
-            _error = '位置情報の許可が必要です';
-            _isLoading = false;
-          });
+          _error = '位置情報の許可が必要です';
+          _isLoading = false;
           return;
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
-        setState(() {
-          _error = '位置情報の許可が永久に拒否されています';
-          _isLoading = false;
-        });
+        _error = '位置情報の許可が永久に拒否されています';
+        _isLoading = false;
         return;
       }
 
       Position position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
-
       final apiKey = '5c0eb5159153499d04404e4d370b33fd';
       final url =
           'https://api.openweathermap.org/data/2.5/weather?lat=${position.latitude}&lon=${position.longitude}&appid=$apiKey&units=metric&lang=ja';
@@ -115,21 +113,15 @@ class _WeatherAppState extends State<WeatherApp> {
           _temperature = '${data['main']['temp']}℃';
           _description = data['weather'][0]['description'];
           _iconCode = data['weather'][0]['icon'];
-          _error = null;
         });
       } else {
-        setState(() {
-          _error = '天気情報を取得できませんでした（${response.statusCode}）';
-        });
+        _error = '天気情報を取得できません（${response.statusCode}）';
       }
     } catch (e) {
-      setState(() {
-        _error = '通信または位置情報エラー';
-      });
+      _error = '通信または位置情報エラー';
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      _isLoading = false;
+      setState(() {});
     }
   }
 
@@ -146,72 +138,138 @@ class _WeatherAppState extends State<WeatherApp> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('天気アプリ'),
+        title:
+            const Text('ソラミル', style: TextStyle(fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.lightBlueAccent, Colors.blue],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: SingleChildScrollView(
-          // スクロール可能
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
             children: [
+              // 入力欄
               TextField(
                 controller: _controller,
-                onSubmitted: fetchWeather,
                 decoration: InputDecoration(
                   labelText: '都市名を入力',
-                  border: OutlineInputBorder(),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  prefixIcon: Icon(Icons.search),
+                  filled: true,
+                  fillColor: Colors.white,
                 ),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
-                    child: ElevatedButton(
+                    child: ElevatedButton.icon(
                       onPressed: () => fetchWeather(_controller.text),
-                      child: Text('天気を取得'),
+                      icon: Icon(Icons.cloud, color: Colors.white),
+                      label: Text('天気取得'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        padding: EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+
+                        foregroundColor: Colors.white, // 文字色を白に
+                      ),
                     ),
                   ),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 12),
                   ElevatedButton(
                     onPressed: _addToFavorites,
-                    child: Icon(Icons.favorite),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      shape: CircleBorder(),
+                      padding: EdgeInsets.all(14),
+                      foregroundColor: Colors.white, // アイコン色白に
+                    ),
+                    child: Icon(Icons.favorite, color: Colors.white),
                   ),
                 ],
               ),
-              SizedBox(height: 8),
-              ElevatedButton(
+              const SizedBox(height: 12),
+              ElevatedButton.icon(
                 onPressed: fetchWeatherByLocation,
-                child: Text('現在地の天気を取得'),
+                icon: Icon(Icons.my_location, color: Colors.white),
+                label: Text('現在地の天気'),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white, // 文字色白に
+                  backgroundColor: Colors.blue,
+                ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 24),
+
+              // 天気表示カード
               if (_isLoading)
                 CircularProgressIndicator()
               else if (_error != null)
                 Text(_error!, style: TextStyle(color: Colors.red))
-              else ...[
-                Text('気温: $_temperature'),
-                Text('天気: $_description'),
-                if (_iconCode.isNotEmpty)
-                  Image.network(
-                    'http://openweathermap.org/img/wn/$_iconCode@2x.png',
-                    width: 100,
-                    height: 100,
+              else if (_temperature.isNotEmpty)
+                Card(
+                  color: Colors.lightBlue[100],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
                   ),
-              ],
-              SizedBox(height: 24),
+                  elevation: 4,
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      children: [
+                        Text('気温: $_temperature',
+                            style: TextStyle(
+                                fontSize: 28, fontWeight: FontWeight.bold)),
+                        SizedBox(height: 8),
+                        Text('天気: $_description',
+                            style: TextStyle(fontSize: 20)),
+                        if (_iconCode.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 16),
+                            child: Image.network(
+                              'http://openweathermap.org/img/wn/$_iconCode@2x.png',
+                              width: 100,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              const SizedBox(height: 24),
               if (_favoriteCities.isNotEmpty) ...[
-                Text('お気に入り都市', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text('お気に入り都市',
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 Wrap(
                   spacing: 8,
                   children: _favoriteCities
-                      .map((city) => ElevatedButton(
+                      .map<Widget>((city) => InputChip(
+                            label: Text(city),
+                            backgroundColor: Colors.blue[100],
                             onPressed: () => fetchWeather(city),
-                            child: Text(city),
+                            onDeleted: () {
+                              setState(() {
+                                _favoriteCities.remove(city);
+                              });
+                            },
+                            deleteIcon: Icon(Icons.close),
                           ))
                       .toList(),
                 ),
-              ],
+              ]
             ],
           ),
         ),
